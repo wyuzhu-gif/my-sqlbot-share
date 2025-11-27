@@ -9,51 +9,28 @@
   </style>
 </head>
 <body>
-  <div id="assistant-container"></div>
+  <!-- 容器必须有 class="copilot" -->
+  <div id="assistant-container" class="copilot"></div>
 
   <script>
-    // 替换为你自己的配置
-    const APP_ID = '你的APP_ID';
-    const APP_SECRET = '你的APP_SECRET'; // 注意：生产环境应在后端生成 token！
-    const SQLBOT_DOMAIN = 'http://你的海聚问数域名或IP:端口'; // 如 http://18.18.18.67:18000
-
-    // ⚠️ 安全警告：以下 JWT 生成仅用于演示！实际应由后端生成 token，避免泄露 APP_SECRET
-    async function generateJWT(payload, secret) {
-      const enc = new TextEncoder();
-      const alg = { name: 'HMAC', hash: 'SHA-256' };
-      const key = await crypto.subtle.importKey('raw', enc.encode(secret), alg, false, ['sign']);
-      const header = { typ: 'JWT', alg: 'HS256' };
-      const data = btoa(JSON.stringify(header)) + '.' + btoa(JSON.stringify(payload));
-      const sig = await crypto.subtle.sign(alg, key, enc.encode(data));
-      const signature = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-      return data + '.' + signature;
-    }
-
-    (async () => {
-      // 固定使用 admin 账号（或你同步过的账号）
-      const token = await generateJWT(
-        { appId: APP_ID, account: 'admin' },
-        APP_SECRET
-      );
-
-      // 加载海聚问数嵌入脚本
+    // 加载海聚问数嵌入脚本
+    (function(){
       const script = document.createElement('script');
-      script.src = `${SQLBOT_DOMAIN}/xpack_static/sqlbot-embedded-dynamic.umd.js?t=${Date.now()}`;
       script.defer = true;
       script.async = true;
+      script.src = "http://191.holardata.com:18000/xpack_static/sqlbot-embedded-dynamic.umd.js";
       document.head.appendChild(script);
-
-      // 等待脚本加载并挂载
-      const timer = setInterval(() => {
-        if (window.sqlbot_embedded_handler?.mounted) {
-          window.sqlbot_embedded_handler.mounted('#assistant-container', {
-            appId: APP_ID,
-            token: token
-          });
-          clearInterval(timer);
-        }
-      }, 500);
     })();
+
+    // 等待挂载
+    let timer = setInterval(() => {
+      if (window.sqlbot_embedded_handler?.mounted) {
+        window.sqlbot_embedded_handler.mounted('.copilot', {
+          embeddedId: "7399668631392489472" // ← 这是你应用的 ID
+        });
+        clearInterval(timer);
+      }
+    }, 500);
   </script>
 </body>
 </html>
