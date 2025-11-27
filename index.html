@@ -9,7 +9,6 @@
   </style>
 </head>
 <body>
-  <!-- 容器必须有 class="copilot" -->
   <div id="assistant-container" class="copilot"></div>
 
   <script>
@@ -22,15 +21,29 @@
       document.head.appendChild(script);
     })();
 
-    // 等待挂载
+    // 等待挂载，带超时保护
     let timer = setInterval(() => {
       if (window.sqlbot_embedded_handler?.mounted) {
-        window.sqlbot_embedded_handler.mounted('.copilot', {
-          embeddedId: "7399668631392489472" // ← 这是你应用的 ID
-        });
-        clearInterval(timer);
+        try {
+          window.sqlbot_embedded_handler.mounted('.copilot', {
+            embeddedId: "7399668631392489472"
+          });
+          console.log("✅ 小助手已成功挂载！");
+          clearInterval(timer);
+        } catch (e) {
+          console.error("❌ 挂载失败:", e);
+          clearInterval(timer);
+        }
       }
     }, 500);
+
+    // 设置超时防止卡死
+    setTimeout(() => {
+      if (timer) {
+        clearInterval(timer);
+        console.error("⚠️ 超时：未能加载 sqlbot_embedded_handler");
+      }
+    }, 10000);
   </script>
 </body>
 </html>
